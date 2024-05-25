@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"idleRain.com/ginEssential/common"
-	"idleRain.com/ginEssential/controller"
 )
 
 func main() {
@@ -12,7 +11,7 @@ func main() {
 	defer db.Close()
 
 	r := gin.Default()
-	r.POST("/api/auth/register", controller.Register)
+	r = CollectRoute(r)
 
 	// 运行 gin
 	panic(r.Run())

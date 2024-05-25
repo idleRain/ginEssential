@@ -39,7 +39,7 @@ func InitDB() {
 	DB = db
 }
 
-// 获取 DB 实例
+// GetDB 获取 DB 实例
 func GetDB() *gorm.DB {
 	return DB
 }
