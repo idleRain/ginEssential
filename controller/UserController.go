@@ -5,7 +5,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 	"idleRain.com/ginEssential/common"
+	"idleRain.com/ginEssential/dto"
 	"idleRain.com/ginEssential/model"
+	"idleRain.com/ginEssential/response"
 	"log"
 	"net/http"
 )
@@ -23,26 +25,26 @@ func Register(context *gin.Context) {
 
 	// 校验
 	if len(name) == 0 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "用户名不能为空！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "用户名不能为空！")
 		return
 	}
 	if len(telephone) != 11 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "手机号长度必须为11位！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "手机号长度必须为11位！")
 		return
 	}
 	if len(password) < 6 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "密码长度不能少于6位！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "密码长度不能少于6位！")
 		return
 	}
 	if isTelephoneExist(db, telephone) {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "用户已存在！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "用户已存在！")
 		return
 	}
 
 	// 加密密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "注册失败！"})
+		response.Response(context, http.StatusInternalServerError, 500, nil, "注册失败！")
 		return
 	}
 
@@ -53,7 +55,7 @@ func Register(context *gin.Context) {
 		Password:  string(hashedPassword),
 	}
 	db.Create(&newUSer)
-	context.JSON(http.StatusOK, gin.H{"code": 200, "msg": "注册成功"})
+	response.Success(context, nil, "注册成功")
 }
 
 // 校验手机号是否存在
@@ -71,36 +73,38 @@ func Login(context *gin.Context) {
 	password := context.PostForm("password")
 
 	if len(telephone) != 11 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "手机号长度必须为11位！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "手机号长度必须为11位！")
 		return
 	}
 	if len(password) < 6 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "密码长度不能少于6位！"})
+		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "密码长度不能少于6位！")
 		return
 	}
 	// 判断用户是否存在
 	var user model.User
 	db.Where("telephone = ?", telephone).First(&user)
 	if user.ID == 0 {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "用户不存在"})
+		response.Response(context, http.StatusBadRequest, 400, nil, "用户不存在！")
+		return
 	}
 	// 判断密码是否正确
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		context.JSON(http.StatusUnprocessableEntity, gin.H{"code": 400, "msg": "密码错误"})
+		response.Response(context, http.StatusBadRequest, 400, nil, "密码错误！")
 		return
 	}
 	// 验证通过，发放 token
 	token, err := common.ReleaseToken(user)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "服务器异常"})
+		response.Response(context, http.StatusInternalServerError, 500, nil, "服务器异常！")
 		log.Printf("token 生成失败：%v", err)
 		return
 	}
 	// 登录成功
-	context.JSON(http.StatusOK, gin.H{"code": 200, "msg": "登陆成功", "data": gin.H{"token": token}})
+	response.Success(context, gin.H{"token": token}, "登陆成功")
 }
 
+// Info 返回用户信息
 func Info(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
-	ctx.JSON(http.StatusOK, gin.H{"code": 200, "data": gin.H{"user": user}})
+	response.Success(ctx, gin.H{"user": dto.ToUserDto(user.(model.User))}, "成功")
 }
