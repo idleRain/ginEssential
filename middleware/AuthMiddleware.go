@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"idleRain.com/ginEssential/common"
 	"idleRain.com/ginEssential/model"
+	"idleRain.com/ginEssential/response"
 	"net/http"
 	"strings"
 )
@@ -16,7 +17,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// 验证 token
 		// 是否为空，获取是否为 Bearer 开头
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer ") {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})
+			response.Response(context, http.StatusUnauthorized, 401, nil, "权限不足")
 			context.Abort()
 			return
 		}
@@ -26,7 +27,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		token, claims, err := common.ParseToken(tokenString)
 		// 验证 token 失效或者无效
 		if err != nil || !token.Valid {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})
+			response.Response(context, http.StatusUnauthorized, 401, nil, "权限不足")
 			context.Abort()
 			return
 		}
@@ -37,7 +38,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		db.First(&user, userId)
 		// 用户不存在
 		if userId == 0 {
-			context.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})
+			response.Response(context, http.StatusUnauthorized, 401, nil, "权限不足")
 			context.Abort()
 			return
 		}

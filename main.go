@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	InitConfig()
-	common.InitDB()
+	InitConfig()    // 初始化配置文件
+	common.InitDB() // 初始化 DB
 	db := common.GetDB()
 	defer db.Close()
 
-	r := gin.Default()
-	r = router.CollectRoute(r)
+	r := gin.Default()         // 创建 gin 应用
+	r = router.CollectRoute(r) // 创建路由文件
 
 	// 运行 gin
 	port := viper.GetString("server.port")
