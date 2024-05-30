@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -17,9 +18,17 @@ func Register(context *gin.Context) {
 	db := common.GetDB()
 
 	// 获取参数
-	name := context.PostForm("name")
-	telephone := context.PostForm("telephone")
-	password := context.PostForm("password")
+	//name := context.PostForm("name")
+	//telephone := context.PostForm("telephone")
+	//password := context.PostForm("password")
+
+	// 获取 json 参数
+	var userRequest model.User
+	json.NewDecoder(context.Request.Body).Decode(&userRequest)
+	context.ShouldBind(&userRequest)
+	name := userRequest.Name
+	telephone := userRequest.Telephone
+	password := userRequest.Telephone
 
 	log.Println(name, telephone, password)
 
@@ -69,8 +78,14 @@ func isTelephoneExist(db *gorm.DB, telephone string) bool {
 func Login(context *gin.Context) {
 	db := common.GetDB()
 	// 获取参数
-	telephone := context.PostForm("telephone")
-	password := context.PostForm("password")
+	//telephone := context.PostForm("telephone")
+	//password := context.PostForm("password")
+	// 获取 json 参数
+	var userRequest model.User
+	json.NewDecoder(context.Request.Body).Decode(&userRequest)
+	context.ShouldBind(&userRequest)
+	telephone := userRequest.Telephone
+	password := userRequest.Telephone
 
 	if len(telephone) != 11 {
 		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "手机号长度必须为11位！")
