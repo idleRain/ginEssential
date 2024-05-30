@@ -8,3 +8,4 @@ datasource:
   database: "ginessential"
   password: "123456"
   charset: "utf8"
+  loc: "Asia/Shanghai"

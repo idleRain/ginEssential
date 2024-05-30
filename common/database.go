@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
 	"idleRain.com/ginEssential/model"
+	"net/url"
 )
 
 var DB *gorm.DB
@@ -19,14 +20,16 @@ func InitDB() {
 	database := viper.GetString("datasource.database")
 	password := viper.GetString("datasource.password")
 	charset := viper.GetString("datasource.charset")
+	loc := viper.GetString("datasource.loc")
 	args := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true",
+		"%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true&loc=%s",
 		username,
 		password,
 		host,
 		port,
 		database,
 		charset,
+		url.QueryEscape(loc),
 	)
 
 	db, err := gorm.Open(driverName, args)

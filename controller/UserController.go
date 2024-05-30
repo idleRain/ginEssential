@@ -28,9 +28,7 @@ func Register(context *gin.Context) {
 	context.ShouldBind(&userRequest)
 	name := userRequest.Name
 	telephone := userRequest.Telephone
-	password := userRequest.Telephone
-
-	log.Println(name, telephone, password)
+	password := userRequest.Password
 
 	// 校验
 	if len(name) == 0 {
@@ -85,7 +83,7 @@ func Login(context *gin.Context) {
 	json.NewDecoder(context.Request.Body).Decode(&userRequest)
 	context.ShouldBind(&userRequest)
 	telephone := userRequest.Telephone
-	password := userRequest.Telephone
+	password := userRequest.Password
 
 	if len(telephone) != 11 {
 		response.Response(context, http.StatusUnprocessableEntity, 422, nil, "手机号长度必须为11位！")

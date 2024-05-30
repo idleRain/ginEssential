@@ -8,8 +8,20 @@ import (
 
 func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.Use(middleware.CORSMiddleware())
-	r.POST("/api/auth/register", controller.Register)
-	r.POST("/api/auth/login", controller.Login)
-	r.POST("/api/auth/info", middleware.AuthMiddleware(), controller.Info)
+
+	authRoutes := r.Group("/api/auth")
+	authRoutes.POST("/register", controller.Register)
+	authRoutes.POST("/login", controller.Login)
+	authRoutes.POST("/info", middleware.AuthMiddleware(), controller.Info)
+
+	// 文章分类路由组
+	categoryRoutes := r.Group("/api/category")
+	// 创建 categoryController
+	categoryController := controller.NewCategoryController()
+	categoryRoutes.POST("/createCategory", categoryController.Create)
+	categoryRoutes.POST("/getCategory/:id", categoryController.Show)
+	categoryRoutes.POST("/updateCategory/:id", categoryController.Update)
+	categoryRoutes.POST("/deleteCategory/:id", categoryController.Delete)
+
 	return r
 }
